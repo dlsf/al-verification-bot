@@ -1,15 +1,13 @@
-use std::collections::HashMap;
-use std::sync::Arc;
 use poise::{serenity_prelude as serenity, Framework};
-use tokio::sync::Mutex;
 
+mod account;
 mod commands;
 
 pub struct Data {
-    tokens: Arc<Mutex<HashMap<u64, String>>>
+    verified_role_id: u64
 }
 
-type Error = Box<dyn std::error::Error + Send + Sync>;
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[tokio::main]
@@ -17,6 +15,8 @@ async fn main() {
     let token = std::env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
     let intents = serenity::GatewayIntents::non_privileged();
     let poise = init_poise();
+    
+    account::init_database().expect("Failed to initialize database");
     
     let client = serenity::ClientBuilder::new(token, intents)
         .framework(poise)
@@ -36,9 +36,13 @@ fn init_poise() -> Framework<Data, Error> {
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
+            let verified_role_id = std::env::var("DISCORD_ROLE").expect("Missing DISCORD_ROLE").parse().expect("Invalid DISCORD_ROLE");
+
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data { tokens: Arc::new(Default::default()) })
+                Ok(Data {
+                    verified_role_id
+                })
             })
         })
         .build()

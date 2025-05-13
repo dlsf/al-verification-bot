@@ -1,4 +1,4 @@
-use crate::{Context, Error};
+use crate::{account, Context, Error};
 use poise::serenity_prelude as serenity;
 
 /// Shows a user's linked AL account
@@ -8,10 +8,21 @@ use poise::serenity_prelude as serenity;
 )]
 pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user: serenity::User) -> Result<(), Error> {
     let _ = ctx.defer_ephemeral().await;
-    let data = ctx.data().tokens.lock().await;
-    let default = &String::from("None");
-    let token = data.get(&user.id.get()).unwrap_or(default);
-    let _ = ctx.reply(format!("User token: {token}")).await;
+    
+    let database_result = account::get_linked_account(user.id);
+    if database_result.is_err() {
+        let _ = ctx.reply("Couldn't check the linked account!").await;
+        return Ok(())
+    }
+    
+    let account_id_option = database_result.unwrap();
+    if account_id_option.is_none() {
+        let _ = ctx.reply("No linked account!").await;
+        return Ok(())
+    }
+    
+    let account_id = account_id_option.unwrap().anilist_id;
+    let _ = ctx.reply(format!("Linked Account: https://anilist.co/user/{account_id}")).await;
     Ok(())
 }
 

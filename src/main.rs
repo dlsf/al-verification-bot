@@ -1,7 +1,8 @@
-use poise::{serenity_prelude as serenity, Framework};
-
-mod account;
+mod anilist;
 mod commands;
+mod database;
+
+use poise::{serenity_prelude as serenity, Framework};
 
 pub struct Data {
     verified_role_id: u64
@@ -16,7 +17,7 @@ async fn main() {
     let intents = serenity::GatewayIntents::non_privileged();
     let poise = init_poise();
     
-    account::init_database().expect("Failed to initialize database");
+    database::init_database().expect("Failed to initialize database");
     
     let client = serenity::ClientBuilder::new(token, intents)
         .framework(poise)

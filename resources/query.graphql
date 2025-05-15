@@ -1,0 +1,6 @@
+query SelfUserView {
+    Viewer {
+        id
+        createdAt
+    }
+}

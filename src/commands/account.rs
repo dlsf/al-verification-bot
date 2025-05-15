@@ -1,4 +1,4 @@
-use crate::{account, Context, Error};
+use crate::{database, Context, Error};
 use poise::serenity_prelude as serenity;
 
 /// Shows a user's linked AL account
@@ -9,7 +9,7 @@ use poise::serenity_prelude as serenity;
 pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user: serenity::User) -> Result<(), Error> {
     let _ = ctx.defer_ephemeral().await;
     
-    let database_result = account::get_linked_account(user.id);
+    let database_result = database::get_linked_account(user.id);
     if database_result.is_err() {
         let _ = ctx.reply("Couldn't check the linked account!").await;
         return Ok(())

@@ -25,18 +25,18 @@ pub async fn verify(ctx: Context<'_>, #[description = "The verification code"] t
     }
     
     // The user already linked their account
-    if !link_result.unwrap() {
+    if !link_result? {
         let _ = ctx.reply("You already linked your account!").await;
         return Ok(())
     }
 
     // Verification successful, give the user the verification Discord role
-    let role_result = ctx.author_member().await.unwrap().add_role(ctx.http(), ctx.data().verified_role_id).await;
-    if role_result.is_err() {
+    let role_change = ctx.author_member().await.unwrap().add_role(ctx.http(), ctx.data().verified_role_id).await;
+    if role_change.is_err() {
         let _ = ctx.reply("Failed to grant the verification role, please contact a moderator!").await;
         return Ok(())
     }
     
-    let _ = ctx.reply("Your account has been linked!").await;
+    let _ = ctx.reply("Your account has been successfully linked!").await;
     Ok(())
 }

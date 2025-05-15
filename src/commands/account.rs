@@ -1,3 +1,4 @@
+use crate::errors::AccountLinkError;
 use crate::{database, Context, Error};
 use poise::serenity_prelude as serenity;
 
@@ -10,18 +11,20 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
     let _ = ctx.defer_ephemeral().await;
     
     let database_result = database::get_linked_account(user.id);
-    if database_result.is_err() {
-        let _ = ctx.reply("Couldn't check the linked account!").await;
-        return Ok(())
-    }
+    let linked_account = match database_result {
+        Ok(account) => account,
+        Err(error) => {
+            return if error.downcast_ref::<AccountLinkError>().is_some() {
+                let _ = ctx.reply("No linked account!").await;
+                Ok(())
+            } else {
+                let _ = ctx.reply("Error checking the link status, try again later!").await;
+                Ok(())
+            }
+        }
+    };
     
-    let account_id_option = database_result.unwrap();
-    if account_id_option.is_none() {
-        let _ = ctx.reply("No linked account!").await;
-        return Ok(())
-    }
-    
-    let account_id = account_id_option.unwrap().anilist_id;
+    let account_id = linked_account.anilist_id;
     let _ = ctx.reply(format!("Linked Account: https://anilist.co/user/{account_id}")).await;
     Ok(())
 }

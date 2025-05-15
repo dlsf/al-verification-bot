@@ -1,6 +1,6 @@
 use crate::anilist::self_user_view::SelfUserViewViewer;
-use custom_error::custom_error;
-use graphql_client::{reqwest::post_graphql as post_graphql, GraphQLQuery};
+use crate::errors::GraphQLError;
+use graphql_client::{reqwest::post_graphql, GraphQLQuery};
 use reqwest::Client;
 
 #[derive(GraphQLQuery)]
@@ -9,11 +9,6 @@ use reqwest::Client;
     query_path = "resources/query.graphql",
 )]
 struct SelfUserView;
-
-custom_error!{GraphQLError
-    RequestError = "Got invalid response from server",
-    ViewError = "Failed to parse response from server"
-}
 
 pub async fn get_user_information(token: &str) -> Result<SelfUserViewViewer, anyhow::Error> {
     let client = Client::builder()

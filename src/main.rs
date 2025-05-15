@@ -1,6 +1,7 @@
 mod anilist;
 mod commands;
 mod database;
+mod errors;
 
 use poise::{serenity_prelude as serenity, Framework};
 
@@ -16,9 +17,9 @@ async fn main() {
     let token = std::env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
     let intents = serenity::GatewayIntents::non_privileged();
     let poise = init_poise();
-    
+
     database::init_database().expect("Failed to initialize database");
-    
+
     let client = serenity::ClientBuilder::new(token, intents)
         .framework(poise)
         .await;

@@ -5,6 +5,9 @@ custom_error!{pub AccountLinkError
 }
 
 custom_error!{pub GraphQLError
-    RequestError = "Got invalid response from server",
+    RequestError = "Received invalid response from server",
     ViewError = "Failed to parse response from server"
 }
+
+custom_error! {pub PermissionError
+    DiscordError = "Failed to contact Discord"}

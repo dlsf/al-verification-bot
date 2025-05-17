@@ -1,4 +1,4 @@
-use crate::errors::AccountLinkError;
+use crate::errors::{AccountLinkError, PermissionError};
 use crate::{database, message, Context, Error};
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::{Color, CreateEmbed, Mentionable};
@@ -36,11 +36,11 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
         .field("AniList", &account_url, false)
         .field("Discord", user.mention().to_string(), false)
         .field("Linked At", format!("<t:{linked_at}:f>"), false);
-    
+
     let _ = message::send(ctx, embed).await;
     Ok(())
 }
 
 async fn permission_check(ctx: Context<'_>) -> Result<bool, Error> {
-    Ok(ctx.author_member().await.unwrap().permissions.unwrap().moderate_members())
+    Ok(ctx.author_member().await.ok_or(PermissionError::DiscordError)?.permissions.unwrap().moderate_members())
 }

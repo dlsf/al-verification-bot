@@ -33,8 +33,8 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
         .title("**Linked Account**")
         .url(&account_url)
         .color(Color::from_rgb(2, 169, 255))
-        .field("Discord", user.mention().to_string(), false)
         .field("AniList", &account_url, false)
+        .field("Discord", user.mention().to_string(), false)
         .field("Linked At", format!("<t:{linked_at}:f>"), false);
     
     let _ = message::send(ctx, embed).await;

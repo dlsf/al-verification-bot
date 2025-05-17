@@ -2,6 +2,7 @@ mod anilist;
 mod commands;
 mod database;
 mod errors;
+mod message;
 
 use poise::{serenity_prelude as serenity, Framework};
 

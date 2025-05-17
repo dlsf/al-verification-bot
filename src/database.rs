@@ -1,18 +1,19 @@
+use crate::errors::AccountLinkError;
 use anyhow::Result;
 use poise::serenity_prelude::UserId;
 use rusqlite::Connection;
-use crate::errors::AccountLinkError;
 
 /// Represents an AL account that's linked to a Discord account
 pub struct LinkedAccount {
     pub discord_id: u64,
-    pub anilist_id: u32
+    pub anilist_id: u32,
+    pub linked_at: u64
 }
 
 /// Sets up the database for initial use
 pub fn init_database() -> Result<()> {
     let connection = Connection::open("database.db")?;
-    connection.execute("CREATE TABLE IF NOT EXISTS LinkedAccounts (discord_id INT PRIMARY KEY, anilist_id INT)", []).expect("Failed to init database.db");
+    connection.execute("CREATE TABLE IF NOT EXISTS LinkedAccounts (discord_id INT PRIMARY KEY, anilist_id INT UNIQUE, linked_at INT)", []).expect("Failed to init database.db");
     Ok(())
 }
 
@@ -26,7 +27,8 @@ pub fn get_linked_account(discord_id: UserId) -> Result<LinkedAccount> {
 
     Ok(LinkedAccount {
         discord_id: row.get("discord_id")?,
-        anilist_id: row.get("anilist_id")?
+        anilist_id: row.get("anilist_id")?,
+        linked_at: row.get("linked_at")?
     })
 }
 
@@ -35,9 +37,8 @@ pub fn get_linked_account(discord_id: UserId) -> Result<LinkedAccount> {
 /// The boolean return value indicates whether new data was able to be inserted
 pub fn link(linked_account: LinkedAccount) -> Result<bool> {
     let connection = Connection::open("database.db")?;
-    let mut statement = connection.prepare("INSERT INTO LinkedAccounts VALUES (?, ?) ON CONFLICT DO NOTHING")?;
+    let mut statement = connection.prepare("INSERT INTO LinkedAccounts VALUES (?, ?, ?) ON CONFLICT DO NOTHING")?;
     
-    let updated_row_count = statement.execute([linked_account.discord_id, linked_account.anilist_id as u64])?;
-    
+    let updated_row_count = statement.execute([linked_account.discord_id, linked_account.anilist_id as u64, linked_account.linked_at])?;
     Ok(updated_row_count != 0)
 }

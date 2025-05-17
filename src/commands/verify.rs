@@ -1,5 +1,6 @@
-use crate::{anilist, database, Context, Error};
 use crate::database::LinkedAccount;
+use crate::{anilist, database, Context, Error};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Link your AniList account
 #[poise::command(slash_command)]
@@ -11,12 +12,13 @@ pub async fn verify(ctx: Context<'_>, #[description = "The verification code"] t
         let _ = ctx.reply("Couldn't verify your account, please check your token or try again later!").await;
         return Ok(())
     }
-
+    
     let link_result = database::link(LinkedAccount {
         discord_id: ctx.author().id.get(),
-        anilist_id: self_user?.id as u32
+        anilist_id: self_user?.id as u32,
+        linked_at: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()
     });
-
+    
     // A database error occurred
     if link_result.is_err() {
         let _ = ctx.reply("An database error occurred, please try again later!").await;

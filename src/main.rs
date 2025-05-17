@@ -7,7 +7,9 @@ mod message;
 use poise::{serenity_prelude as serenity, Framework};
 
 pub struct Data {
-    verified_role_id: u64
+    verified_role_id: u64,
+    client_id: u32, 
+    client_secret: String, 
 }
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -40,11 +42,15 @@ fn init_poise() -> Framework<Data, Error> {
         })
         .setup(|ctx, _ready, framework| {
             let verified_role_id = std::env::var("DISCORD_ROLE").expect("Missing DISCORD_ROLE").parse().expect("Invalid DISCORD_ROLE");
-
+            let client_id: u32 = std::env::var("ANILIST_CLIENT_ID").expect("Missing ANILIST_CLIENT_ID").parse().expect("Invalid ANILIST_CLIENT_ID");
+            let client_secret: String = std::env::var("ANILIST_CLIENT_SECRET").expect("Missing ANILIST_CLIENT_SECRET");
+            
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
-                    verified_role_id
+                    verified_role_id,
+                    client_id,
+                    client_secret
                 })
             })
         })

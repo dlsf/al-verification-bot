@@ -7,9 +7,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub async fn verify(ctx: Context<'_>, #[description = "The verification code"] token: String) -> Result<(), Error> {
     let _ = ctx.defer_ephemeral().await;
 
-    let self_user = anilist::get_user_information(token.trim()).await;
+    let self_user = anilist::get_user_information(token.trim(), ctx.data()).await;
     if self_user.is_err() {
-        let _ = message::err(ctx, "Couldn't verify your account, please check your token or try again later!").await;
+        let _ = message::err(ctx, "Couldn't verify your account, please get a new token and try again later!").await;
         return Ok(())
     }
     

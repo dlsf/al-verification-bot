@@ -1,7 +1,7 @@
 use crate::errors::AccountLinkError;
 use crate::{database, message, Context, Error};
-use poise::serenity_prelude::{Color, CreateEmbed, Mentionable};
 use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{Color, CreateEmbed, Mentionable};
 
 /// Shows a user's linked AniList account
 #[poise::command(

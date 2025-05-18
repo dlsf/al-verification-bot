@@ -39,7 +39,6 @@ fn init_poise() -> Framework<Data, Error> {
             commands: vec![
                 commands::account::account(),
                 commands::setup::setup(),
-                commands::verify::verify()
             ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(listener::button_listener::event_handler(ctx, event, framework, data))

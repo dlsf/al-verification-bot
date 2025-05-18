@@ -6,15 +6,6 @@ pub async fn send(ctx: Context<'_>, embed: CreateEmbed) {
     let _ = ctx.send(CreateReply::default().embed(embed).reply(true).ephemeral(true)).await;
 }
 
-pub async fn ok(ctx: Context<'_>, body: &str) {
-    let embed = CreateEmbed::new()
-        .description(body)
-        // Set the AL primary color
-        .color(primary_color());
-    
-    send(ctx, embed).await
-}
-
 pub async fn err(ctx: Context<'_>, body: &str) {
     let embed = CreateEmbed::new()
         .title("Error")

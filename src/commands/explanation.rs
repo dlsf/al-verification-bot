@@ -5,7 +5,7 @@ use poise::serenity_prelude::{CreateActionRow, CreateButton, CreateEmbed, Create
 /// Sends a message explaining the verification process
 #[poise::command(
     slash_command,
-    required_permissions = "ADMINISTRATOR"
+    default_member_permissions = "ADMINISTRATOR"
 )]
 pub async fn explanation(ctx: Context<'_>, #[description = "The channel to use"] channel: GuildChannel) -> Result<(), Error> {
     let _ = ctx.defer_ephemeral().await;

@@ -1,4 +1,4 @@
-use crate::utils::errors::{AccountLinkError, PermissionError};
+use crate::utils::errors::AccountLinkError;
 use crate::utils::message;
 use crate::{database, Context, Error};
 use poise::serenity_prelude as serenity;
@@ -7,7 +7,7 @@ use poise::serenity_prelude::{CreateEmbed, Mentionable};
 /// Shows a user's linked AniList account
 #[poise::command(
     slash_command,
-    check = "permission_check"
+    default_member_permissions = "MODERATE_MEMBERS"
 )]
 pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user: serenity::User) -> Result<(), Error> {
     let _ = ctx.defer_ephemeral().await;
@@ -40,8 +40,4 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
 
     let _ = message::send(ctx, embed).await;
     Ok(())
-}
-
-async fn permission_check(ctx: Context<'_>) -> Result<bool, Error> {
-    Ok(ctx.author_member().await.ok_or(PermissionError::DiscordError)?.permissions.unwrap().moderate_members())
 }

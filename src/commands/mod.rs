@@ -1,3 +1,3 @@
 pub mod account;
-pub mod explanation;
+pub mod setup;
 pub mod verify;

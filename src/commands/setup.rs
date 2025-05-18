@@ -7,7 +7,7 @@ use poise::serenity_prelude::{CreateActionRow, CreateButton, CreateEmbed, Create
     slash_command,
     default_member_permissions = "ADMINISTRATOR"
 )]
-pub async fn explanation(ctx: Context<'_>, #[description = "The channel to use"] channel: GuildChannel) -> Result<(), Error> {
+pub async fn setup(ctx: Context<'_>, #[description = "The channel to use"] channel: GuildChannel) -> Result<(), Error> {
     let _ = ctx.defer_ephemeral().await;
 
     let _ = channel.send_message(ctx.http(), CreateMessage::new()

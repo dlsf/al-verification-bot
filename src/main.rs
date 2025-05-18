@@ -38,7 +38,7 @@ fn init_poise() -> Framework<Data, Error> {
         .options(poise::FrameworkOptions {
             commands: vec![
                 commands::account::account(),
-                commands::explanation::explanation(),
+                commands::setup::setup(),
                 commands::verify::verify()
             ],
             event_handler: |ctx, event, framework, data| {

@@ -1,7 +1,8 @@
-use crate::errors::{AccountLinkError, PermissionError};
-use crate::{database, message, Context, Error};
+use crate::utils::errors::{AccountLinkError, PermissionError};
+use crate::utils::message;
+use crate::{database, Context, Error};
 use poise::serenity_prelude as serenity;
-use poise::serenity_prelude::{Color, CreateEmbed, Mentionable};
+use poise::serenity_prelude::{CreateEmbed, Mentionable};
 
 /// Shows a user's linked AniList account
 #[poise::command(
@@ -32,7 +33,7 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
     let embed = CreateEmbed::new()
         .title("**Linked Account**")
         .url(&account_url)
-        .color(Color::from_rgb(2, 169, 255))
+        .color(message::primary_color())
         .field("AniList", &account_url, false)
         .field("Discord", user.mention().to_string(), false)
         .field("Linked At", format!("<t:{linked_at}:f>"), false);

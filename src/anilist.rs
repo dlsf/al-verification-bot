@@ -1,5 +1,5 @@
 use crate::anilist::self_user_view::SelfUserViewViewer;
-use crate::errors::GraphQLError;
+use crate::utils::errors::GraphQLError;
 use crate::Data;
 use anyhow::{Error, Result};
 use graphql_client::{reqwest::post_graphql, GraphQLQuery};

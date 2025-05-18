@@ -1,4 +1,4 @@
-use crate::errors::AccountLinkError;
+use crate::utils::errors::AccountLinkError;
 use anyhow::Result;
 use poise::serenity_prelude::UserId;
 use rusqlite::Connection;

@@ -1,7 +1,8 @@
 use custom_error::custom_error;
 
 custom_error!{pub AccountLinkError
-    NotLinked = "The account hasn't been linked yet"
+    NotLinked = "The account hasn't been linked yet",
+    DiscordError = "Failed to contact Discord"
 }
 
 custom_error!{pub GraphQLError

@@ -1,3 +1,4 @@
+use crate::utils::errors::AccountLinkError;
 use crate::{verification, Data, Error};
 use poise::serenity_prelude::{ComponentInteraction, Context, CreateInteractionResponse, CreateInteractionResponseFollowup, CreateInteractionResponseMessage, CreateQuickModal, FullEvent};
 
@@ -21,7 +22,7 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
     }
 
     let modal_response = component_interaction.quick_modal(
-        &ctx,
+        ctx,
         CreateQuickModal::new("Account Verification").short_field("Please enter your authorization code")
     ).await;
 
@@ -34,25 +35,25 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
                 .ephemeral(true)))
             .await;
 
-        let member = modal.interaction.member.unwrap();
-        let verification_result = verification::verify(member.user.id.get(), token.to_string(), &data).await;
+        let member = modal.interaction.member.ok_or(AccountLinkError::DiscordError)?;
+        let verification_result = verification::verify(member.user.id.get(), token.to_string(), data).await;
         
         if verification_result.is_err() {
             // This should never run
-            send_followup("Something really went wrong, please try again later!", &component_interaction, ctx).await;
+            send_followup("Something really went wrong, please try again later!", component_interaction, ctx).await;
             println!("{}", verification_result.unwrap_err()); // TODO: Replace with proper logging
             return Ok(())
         }
 
         if let Some(message) = verification_result? {
             // Something failed gracefully, print the error message
-            send_followup(message, &component_interaction, ctx).await;
+            send_followup(message, component_interaction, ctx).await;
             return Ok(())
         }
 
         let role_change = member.add_role(ctx, data.verified_role_id).await;
         if role_change.is_err() {
-            send_followup("Failed to grant the verification role, please contact a moderator!", &component_interaction, ctx).await;
+            send_followup("Failed to grant the verification role, please contact a moderator!", component_interaction, ctx).await;
             return Ok(())
         }
 

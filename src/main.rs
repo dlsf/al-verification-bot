@@ -5,8 +5,8 @@ mod listener;
 mod utils;
 mod verification;
 
-use poise::{serenity_prelude as serenity, Framework};
 use poise::serenity_prelude::GatewayIntents;
+use poise::{serenity_prelude as serenity, Framework};
 
 pub struct Data {
     verified_role_id: u64,

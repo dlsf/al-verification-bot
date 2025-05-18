@@ -16,13 +16,12 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
     let linked_account = match database_result {
         Ok(account) => account,
         Err(error) => {
-            return if error.downcast_ref::<AccountLinkError>().is_some() {
-                let _ = message::err(ctx, "No linked account!").await;
-                Ok(())
+            if error.downcast_ref::<AccountLinkError>().is_some() {
+                message::err(ctx, "No linked account!").await;
             } else {
-                let _ = message::err(ctx, "Error checking the link status, try again later!").await;
-                Ok(())
+                message::err(ctx, "Error checking the link status, try again later!").await;
             }
+            return Ok(())
         }
     };
     
@@ -38,6 +37,6 @@ pub async fn account(ctx: Context<'_>, #[description = "The user to check"] user
         .field("Discord", user.mention().to_string(), false)
         .field("Linked At", format!("<t:{linked_at}:f>"), false);
 
-    let _ = message::send(ctx, embed).await;
+    message::send(ctx, embed).await;
     Ok(())
 }

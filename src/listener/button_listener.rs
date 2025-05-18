@@ -17,7 +17,7 @@ pub async fn event_handler(
 }
 
 async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: &Context, data: &Data) -> Result<(), Error> {
-    if &component_interaction.data.custom_id != "verify_button" {
+    if component_interaction.data.custom_id != "verify_button" {
         return Ok(());
     }
 
@@ -45,9 +45,9 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
             return Ok(())
         }
 
-        if let Some(message) = verification_result? {
+        if let Some(failure_message) = verification_result? {
             // Something failed gracefully, print the error message
-            send_followup(message, component_interaction, ctx).await;
+            send_followup(failure_message, component_interaction, ctx).await;
             return Ok(())
         }
 

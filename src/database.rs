@@ -56,3 +56,19 @@ pub fn link(linked_account: LinkedAccount) -> Result<bool> {
     let updated_row_count = statement.execute([linked_account.discord_id, linked_account.anilist_id as u64, linked_account.linked_at])?;
     Ok(updated_row_count != 0)
 }
+
+pub fn unlink_account_discord(discord_id: UserId) -> Result<bool> {
+    let connection = Connection::open("database.db")?;
+    let mut statement = connection.prepare("DELETE FROM LinkedAccounts WHERE discord_id = ?")?;
+
+    let rows = statement.execute([discord_id.get()])?;
+    Ok(rows == 1)
+}
+
+pub fn unlink_account_anilist(anilist_id: u32) -> Result<bool> {
+    let connection = Connection::open("database.db")?;
+    let mut statement = connection.prepare("DELETE FROM LinkedAccounts WHERE anilist_id = ?")?;
+
+    let rows = statement.execute([anilist_id])?;
+    Ok(rows == 1)
+}

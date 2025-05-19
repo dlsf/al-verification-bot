@@ -1,8 +1,8 @@
-use crate::{database, Context, Error};
-use poise::serenity_prelude::{CreateEmbed, Mentionable, User};
 use crate::database::LinkedAccount;
 use crate::utils::errors::AccountLinkError;
 use crate::utils::message;
+use crate::{database, Context, Error};
+use poise::serenity_prelude::{CreateEmbed, Mentionable, User};
 
 /// Shows a user's linked AniList account
 #[poise::command(
@@ -38,9 +38,9 @@ async fn handle(ctx: Context<'_>, linked_account_result: anyhow::Result<LinkedAc
         Ok(account) => account,
         Err(error) => {
             if error.downcast_ref::<AccountLinkError>().is_some() {
-                message::err(ctx, "No linked account!").await;
+                message::err(&ctx, "No linked account!").await;
             } else {
-                message::err(ctx, "Error checking the link status, try again later!").await;
+                message::err(&ctx, "Error checking the link status, try again later!").await;
             }
             return Ok(())
         }
@@ -58,7 +58,7 @@ async fn handle(ctx: Context<'_>, linked_account_result: anyhow::Result<LinkedAc
         .field("Discord", ctx.author().mention().to_string(), false)
         .field("Linked At", format!("<t:{linked_at}:f>"), false);
 
-    message::send(ctx, embed).await;
+    message::send(&ctx, embed).await;
 
     Ok(())
 }

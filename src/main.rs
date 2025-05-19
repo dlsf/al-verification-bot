@@ -38,7 +38,9 @@ fn init_poise() -> Framework<Data, Error> {
         .options(poise::FrameworkOptions {
             commands: vec![
                 commands::account::account(),
+                commands::link::link(),
                 commands::setup::setup(),
+                commands::unlink::unlink()
             ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(listener::button_listener::event_handler(ctx, event, framework, data))

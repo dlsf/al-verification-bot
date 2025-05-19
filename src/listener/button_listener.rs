@@ -47,7 +47,7 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
 
         if let Some(failure_message) = verification_result? {
             // Something failed gracefully, print the error message
-            send_followup(failure_message, component_interaction, ctx).await;
+            send_followup(&failure_message, component_interaction, ctx).await;
             return Ok(())
         }
 

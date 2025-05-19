@@ -5,6 +5,7 @@ mod listener;
 mod utils;
 mod verification;
 
+use std::time::Duration;
 use poise::serenity_prelude::GatewayIntents;
 use poise::{serenity_prelude as serenity, Framework};
 
@@ -12,6 +13,7 @@ pub struct Data {
     verified_role_id: u64,
     client_id: u32,
     client_secret: String,
+    minimum_account_age: Duration,
 }
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -51,13 +53,17 @@ fn init_poise() -> Framework<Data, Error> {
             let verified_role_id = std::env::var("DISCORD_ROLE").expect("Missing DISCORD_ROLE").parse().expect("Invalid DISCORD_ROLE");
             let client_id: u32 = std::env::var("ANILIST_CLIENT_ID").expect("Missing ANILIST_CLIENT_ID").parse().expect("Invalid ANILIST_CLIENT_ID");
             let client_secret: String = std::env::var("ANILIST_CLIENT_SECRET").expect("Missing ANILIST_CLIENT_SECRET");
+            
+            let account_age_hours: u64 = std::env::var("ANILIST_ACCOUNT_AGE_HOURS").expect("Missing ANILIST_ACCOUNT_AGE_HOURS").parse().expect("Invalid ANILIST_ACCOUNT_AGE_HOURS");
+            let minimum_account_age: Duration = Duration::from_secs(account_age_hours * 60 * 60);
 
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
                     verified_role_id,
                     client_id,
-                    client_secret
+                    client_secret,
+                    minimum_account_age
                 })
             })
         })

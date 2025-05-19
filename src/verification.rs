@@ -1,29 +1,38 @@
 use crate::database::LinkedAccount;
 use crate::{anilist, database, Data};
 use anyhow::Error;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<Option<&str>, Error> {
-    let self_user = anilist::get_user_information(code.trim(), data).await;
-    if self_user.is_err() {
-        return Ok(Some("Couldn't verify your account, please get a new token and try again later!"))
+pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<Option<String>, Error> {
+    let self_user_result = anilist::get_user_information(code.trim(), data).await;
+    if self_user_result.is_err() {
+        return Ok(Some("Couldn't verify your account, please get a new token and try again later!".into()))
     }
-
+    
+    let self_user = self_user_result?;
+    let created_at = self_user.created_at.unwrap_or(0);
+    let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+    let account_age = Duration::from_secs(now - created_at as u64);
+    if account_age < data.minimum_account_age {
+        let remaining_time_hours = (data.minimum_account_age.abs_diff(account_age).as_secs() as f64 / 60.0 / 60.0).ceil() as u64;
+        return Ok(Some(format!("Your AniList account is too new to be verified, please try again in {} hours!", remaining_time_hours)))
+    }
+    
     let link_result = database::link(LinkedAccount {
         discord_id: user_id,
-        anilist_id: self_user?.id as u32,
-        linked_at: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs()
+        anilist_id: self_user.id as u32,
+        linked_at: now
     });
 
     // A database error occurred
     if link_result.is_err() {
         println!("{}", link_result.err().unwrap()); // TODO: Replace with proper logging
-        return Ok(Some("An database error occurred, please try again later!"));
+        return Ok(Some("An database error occurred, please try again later!".into()));
     }
 
     // The user already linked their account
     if !link_result? {
-        return Ok(Some("You already linked your account!"));
+        return Ok(Some("You already linked your account!".into()));
     }
     
     Ok(None)

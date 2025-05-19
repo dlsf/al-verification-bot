@@ -18,11 +18,25 @@ pub fn init_database() -> Result<()> {
 }
 
 /// Retrieves the account that's linked with the provided Discord account ID,
-pub fn get_linked_account(discord_id: UserId) -> Result<LinkedAccount> {
+pub fn get_linked_account_discord(discord_id: UserId) -> Result<LinkedAccount> {
     let connection = Connection::open("database.db")?;
     let mut statement = connection.prepare("SELECT * FROM LinkedAccounts WHERE discord_id = ?")?;
 
     let mut rows = statement.query([discord_id.get()])?;
+    let row = rows.next()?.ok_or(AccountLinkError::NotLinked)?;
+
+    Ok(LinkedAccount {
+        discord_id: row.get("discord_id")?,
+        anilist_id: row.get("anilist_id")?,
+        linked_at: row.get("linked_at")?
+    })
+}
+
+pub fn get_linked_account_anilist(anilist_id: u32) -> Result<LinkedAccount> {
+    let connection = Connection::open("database.db")?;
+    let mut statement = connection.prepare("SELECT * FROM LinkedAccounts WHERE anilist_id = ?")?;
+
+    let mut rows = statement.query([anilist_id])?;
     let row = rows.next()?.ok_or(AccountLinkError::NotLinked)?;
 
     Ok(LinkedAccount {

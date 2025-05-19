@@ -23,6 +23,7 @@ pub async fn link(ctx: Context<'_>, user: User, anilist_id: u32) -> Result<(), E
 
     if !link_result? {
         message::err(&ctx, "This user already has a linked account, please unlink it first!").await;
+        return Ok(())
     }
 
     message::ok(&ctx, "Successfully linked the account!").await;

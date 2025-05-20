@@ -3,10 +3,12 @@ use crate::utils::errors::AccountLinkError;
 use crate::{anilist, database, Data};
 use anyhow::{Error, Result};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use log::{error, warn};
 
 pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<()> {
     let self_user_result = anilist::get_user_information(code.trim(), data).await;
     if self_user_result.is_err() {
+        warn!("Couldn't verify user, this is most likely not an error: {}", self_user_result.err().unwrap());
         return Err(Error::new(AccountLinkError::Anilist))
     }
     
@@ -22,7 +24,7 @@ pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<()> {
 
     // A database error occurred
     if link_result.is_err() {
-        println!("{}", link_result.err().unwrap()); // TODO: Replace with proper logging
+        error!("Failed to verify user due to database error: {}", link_result.err().unwrap());
         return Err(Error::new(AccountLinkError::Database))
     }
 

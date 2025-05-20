@@ -1,3 +1,4 @@
+use log::error;
 use crate::utils::errors::AccountLinkError;
 use crate::{verification, Data, Error};
 use poise::serenity_prelude::{ComponentInteraction, Context, CreateInteractionResponse, CreateInteractionResponseFollowup, CreateInteractionResponseMessage, CreateQuickModal, FullEvent, QuickModalResponse};
@@ -54,6 +55,7 @@ async fn verify_account(modal: QuickModalResponse, component_interaction: &Compo
             send_followup(error_type.to_string().as_str(), component_interaction, ctx).await;
         } else {
             // Should never run
+            error!("Encountered unknown error while verifying user: {}", error);
             send_followup("Something really went wrong, please try again later!", component_interaction, ctx).await;
         }
 
@@ -62,6 +64,7 @@ async fn verify_account(modal: QuickModalResponse, component_interaction: &Compo
 
     let role_change = member.add_role(ctx, data.verified_role_id).await;
     if role_change.is_err() {
+        error!("Failed to grant verification role: {}", role_change.unwrap_err());
         send_followup("Failed to grant the verification role, please contact a moderator!", component_interaction, ctx).await;
         return Ok(())
     }

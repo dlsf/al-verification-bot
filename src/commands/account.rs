@@ -1,3 +1,4 @@
+use log::error;
 use crate::database::LinkedAccount;
 use crate::utils::errors::AccountLinkError;
 use crate::utils::message;
@@ -40,6 +41,7 @@ async fn handle(ctx: Context<'_>, linked_account_result: anyhow::Result<LinkedAc
             if error.downcast_ref::<AccountLinkError>().is_some() {
                 message::err(&ctx, "No linked account!").await;
             } else {
+                error!("Failed to check account link status: {}", error);
                 message::err(&ctx, "Error checking the link status, try again later!").await;
             }
             return Ok(())

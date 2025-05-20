@@ -1,12 +1,13 @@
 use crate::database::LinkedAccount;
+use crate::utils::errors::AccountLinkError;
 use crate::{anilist, database, Data};
-use anyhow::Error;
+use anyhow::{Error, Result};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<Option<String>, Error> {
+pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<()> {
     let self_user_result = anilist::get_user_information(code.trim(), data).await;
     if self_user_result.is_err() {
-        return Ok(Some("Couldn't verify your account, please get a new token and try again later!".into()))
+        return Err(Error::new(AccountLinkError::Anilist))
     }
     
     let self_user = self_user_result?;
@@ -14,8 +15,8 @@ pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<Option<St
     let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
     let account_age = Duration::from_secs(now - created_at as u64);
     if account_age < data.minimum_account_age {
-        let remaining_time_hours = (data.minimum_account_age.abs_diff(account_age).as_secs() as f64 / 60.0 / 60.0).ceil() as u64;
-        return Ok(Some(format!("Your AniList account is too new to be verified, please try again in {} hours!", remaining_time_hours)))
+        let remaining_time_hours = (data.minimum_account_age.abs_diff(account_age).as_secs() as f64 / 60.0 / 60.0).ceil() as u32;
+        return Err(Error::new(AccountLinkError::AccountAge {remaining_time_hours}))
     }
     
     let link_result = database::link(LinkedAccount {
@@ -27,13 +28,13 @@ pub async fn verify(user_id: u64, code: String, data: &Data) -> Result<Option<St
     // A database error occurred
     if link_result.is_err() {
         println!("{}", link_result.err().unwrap()); // TODO: Replace with proper logging
-        return Ok(Some("An database error occurred, please try again later!".into()));
+        return Err(Error::new(AccountLinkError::Database))
     }
 
     // The user already linked their account
     if !link_result? {
-        return Ok(Some("You already linked your account!".into()));
+        return Err(Error::new(AccountLinkError::AlreadyLinked));
     }
     
-    Ok(None)
+    Ok(())
 }

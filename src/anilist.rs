@@ -27,7 +27,7 @@ pub async fn get_user_information(auth_code: &str, data: &Data) -> Result<SelfUs
         .build()?;
 
     let response_body = post_graphql::<SelfUserView, _>(&client, "https://graphql.anilist.co/", self_user_view::Variables {}).await?;
-    Ok(response_body.data.ok_or(GraphQLError::RequestError)?.viewer.ok_or(GraphQLError::ViewError)?)
+    Ok(response_body.data.ok_or(GraphQLError::Request)?.viewer.ok_or(GraphQLError::View)?)
 }
 
 #[derive(Serialize)]
@@ -67,6 +67,6 @@ async fn get_bearer_token(auth_code: &str, data: &Data) -> Result<String> {
         let bearer_response: BearerResponse = serde_json::from_str(response.text().await?.as_str())?;
         Ok(bearer_response.access_token)
     } else {
-        Err(Error::new(GraphQLError::RequestError))
+        Err(Error::new(GraphQLError::Request))
     }
 }

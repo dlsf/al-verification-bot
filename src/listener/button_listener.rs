@@ -44,18 +44,16 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
             cooldown.apply(user_id);
         }
         
-        let member = modal.interaction.member.ok_or(AccountLinkError::DiscordError)?;
+        let member = modal.interaction.member.ok_or(AccountLinkError::Discord)?;
         let verification_result = verification::verify(member.user.id.get(), token.to_string(), data).await;
-        if verification_result.is_err() {
-            // This should never run
-            send_followup("Something really went wrong, please try again later!", component_interaction, ctx).await;
-            println!("{}", verification_result.unwrap_err()); // TODO: Replace with proper logging
-            return Ok(())
-        }
-
-        if let Some(failure_message) = verification_result? {
-            // Something failed gracefully, print the error message
-            send_followup(&failure_message, component_interaction, ctx).await;
+        if let Some(error) = verification_result.err() {
+            if let Some(error_type) = error.downcast_ref::<AccountLinkError>() {
+                send_followup(error_type.to_string().as_str(), component_interaction, ctx).await;
+            } else {
+                // Should never run
+                send_followup("Something really went wrong, please try again later!", component_interaction, ctx).await;
+            }
+            
             return Ok(())
         }
 

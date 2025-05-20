@@ -5,15 +5,18 @@ mod listener;
 mod utils;
 mod verification;
 
-use std::time::Duration;
-use poise::serenity_prelude::GatewayIntents;
+use crate::utils::cooldown::Cooldown;
+use poise::serenity_prelude::{GatewayIntents, UserId};
 use poise::{serenity_prelude as serenity, Framework};
+use std::time::Duration;
+use tokio::sync::Mutex;
 
 pub struct Data {
     verified_role_id: u64,
     client_id: u32,
     client_secret: String,
     minimum_account_age: Duration,
+    cooldown: Mutex<Cooldown<UserId>>
 }
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -57,13 +60,17 @@ fn init_poise() -> Framework<Data, Error> {
             let account_age_hours: u64 = std::env::var("ANILIST_ACCOUNT_AGE_HOURS").expect("Missing ANILIST_ACCOUNT_AGE_HOURS").parse().expect("Invalid ANILIST_ACCOUNT_AGE_HOURS");
             let minimum_account_age: Duration = Duration::from_secs(account_age_hours * 60 * 60);
 
+            let cooldown_minutes: u64 = std::env::var("VERIFICATION_COOLDOWN_MINUTES").expect("Missing VERIFICATION_COOLDOWN_MINUTES").parse().expect("Invalid VERIFICATION_COOLDOWN_MINUTES");
+            let verification_cooldown: Duration = Duration::from_secs(cooldown_minutes * 60);
+
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
                     verified_role_id,
                     client_id,
                     client_secret,
-                    minimum_account_age
+                    minimum_account_age,
+                    cooldown: Mutex::new(Cooldown::new(verification_cooldown))
                 })
             })
         })

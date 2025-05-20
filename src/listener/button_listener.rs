@@ -20,7 +20,7 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
     if component_interaction.data.custom_id != "verify_button" {
         return Ok(());
     }
-
+    
     let modal_response = component_interaction.quick_modal(
         ctx,
         CreateQuickModal::new("Account Verification").short_field("Please enter your authorization code")
@@ -34,10 +34,18 @@ async fn handle_button_click(component_interaction: &ComponentInteraction, ctx: 
                 .content("Linking account...")
                 .ephemeral(true)))
             .await;
-
+        
+        let user_id = modal.interaction.user.id;
+        let mut cooldown = data.cooldown.lock().await;
+        if cooldown.is_on_cooldown(user_id) {
+            send_followup("You have just attempted to verify yourself. Please wait a few minutes before trying again!", component_interaction, ctx).await;
+            return Ok(())
+        } else {
+            cooldown.apply(user_id);
+        }
+        
         let member = modal.interaction.member.ok_or(AccountLinkError::DiscordError)?;
         let verification_result = verification::verify(member.user.id.get(), token.to_string(), data).await;
-        
         if verification_result.is_err() {
             // This should never run
             send_followup("Something really went wrong, please try again later!", component_interaction, ctx).await;

@@ -1,0 +1,13 @@
+services:
+  bot:
+    image: replace_me/al-verification-bot
+    environment:
+      - DISCORD_TOKEN=REPLACE_ME
+      - DISCORD_ROLE=123
+      - ANILIST_CLIENT_ID=123
+      - ANILIST_CLIENT_SECRET=REPLACE_ME
+      - ANILIST_ACCOUNT_AGE_HOURS=24
+      - VERIFICATION_COOLDOWN_MINUTES=10
+    volumes:
+      - ./database.db:/app/database.db
+      - ./logs:/app/logs
